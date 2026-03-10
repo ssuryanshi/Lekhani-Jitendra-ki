@@ -15,8 +15,16 @@ export async function GET(request: NextRequest) {
   }
 
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as 'invite' | 'email' });
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash,
+      type: type as 'invite' | 'email' | 'recovery',
+    });
+
     if (!error) {
+      // Invite → set password first
+      if (type === 'invite') {
+        return NextResponse.redirect(new URL('/auth/set-password', request.url));
+      }
       return NextResponse.redirect(new URL('/admin', request.url));
     }
   }
